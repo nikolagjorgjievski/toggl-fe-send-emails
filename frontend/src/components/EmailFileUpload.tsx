@@ -86,7 +86,7 @@ export default function EmailFileUpload(): ReactElement {
               'text/plain': ['.txt',],
             }}/>
           <div style={{ marginTop: '20px' }}>
-            <button type="button" onClick={handleSendEmails} disabled={loading || files.length === 0}>
+            <button type="button" onClick={() => { void handleSendEmails() }} disabled={loading || files.length === 0}>
               Send emails
             </button>
           </div>
