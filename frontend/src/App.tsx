@@ -1,7 +1,8 @@
 import React, { ReactElement } from 'react';
+import EmailFileUpload from './components/EmailFileUpload';
 
 function App(): ReactElement {
-  return <div>Implement me!</div>;
+  return <EmailFileUpload />;
 }
 
 export default App;
