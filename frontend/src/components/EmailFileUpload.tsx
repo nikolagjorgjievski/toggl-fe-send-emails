@@ -10,7 +10,6 @@ export default function EmailFileUpload(): ReactElement {
   const [ loadedFiles, setLoadedFiles ] = useState<FileWithEmails[]>([]);
   const [ loading, setLoading ] = useState<boolean>(false);
   const [ notification, setNotification ] = useState<NotificationType>(defaultNotification);
-  const [ invalidEmails, setInvalidEmails ] = useState<string[]>([]);
 
   const files = loadedFiles.map((file) => (
     <li key={file.path}>
@@ -20,7 +19,7 @@ export default function EmailFileUpload(): ReactElement {
 
   const handleSendEmailsSuccess = (): void => {
     setNotification({
-      message: 'Successfully sent the emails',
+      message: (<p>Successfully sent the emails</p>),
       status: 'success',
     });
     setLoadedFiles([]);
@@ -28,20 +27,32 @@ export default function EmailFileUpload(): ReactElement {
   }
 
   const handleSendEmailsFailure = (response: UploadEmailsResponse | null = null): void => {
+    const invalidEmails = response?.emails ?? [];
     setNotification({
-      message: 'Sending emails failed.',
+      message: (
+        <>
+          {invalidEmails.length === 0
+            ? <p>Sending emails failed.</p>
+            : (
+              <>
+                <p>Failed to send emails to the following records:</p>
+                <ul style={{ marginTop: '10px' }}>
+                  {invalidEmails.map(email => (
+                    <li key={email}>{email}</li>
+                  ))}
+                </ul>
+              </>
+            )
+          }
+        </>),
       status: 'error',
     });
     setLoading(false);
-    if (response !== null) {
-      setInvalidEmails(response.emails ?? []);
-    }
   }
 
   const handleSendEmails = async (): Promise<any> => {
     setLoading(true);
     setNotification(defaultNotification);
-    setInvalidEmails([]);
     const emailList = loadedFiles.flatMap(({ parsedLines }) => parsedLines);
 
     try {
@@ -59,36 +70,32 @@ export default function EmailFileUpload(): ReactElement {
   return (
     <>
       {notification.message !== undefined && (
-        <div className={notification.status}>
-          <p>{notification.message}</p>
+        <div className={`notification ${notification.status ?? ''}`}>
+          {notification.message}
         </div>
       )}
       {loading && (
         <p>Loading...</p>
       )}
       {!loading && (
-        <FileUploadComponent
-          setLoadedFiles={setLoadedFiles}
-          setLoading={setLoading}
-          accept={{
-            'text/plain': ['.txt',],
-          }}/>
-      )}
-      <button type="button" onClick={handleSendEmails} disabled={loading || files.length === 0}>Send emails</button>
-      {files.length > 0 && (
         <>
-          <h4>Selected Files</h4>
-          <ul>{files}</ul>
-        </>
-      )}
-      {invalidEmails.length > 0 && (
-        <>
-          <h4>There was an error. Failed to send emails to some addresses:</h4>
-          <ul>
-            {invalidEmails.map(email => (
-              <li key={email}>{email}</li>
-            ))}
-          </ul>
+          <FileUploadComponent
+            setLoadedFiles={setLoadedFiles}
+            setLoading={setLoading}
+            accept={{
+              'text/plain': ['.txt',],
+            }}/>
+          <div style={{ marginTop: '20px' }}>
+            <button type="button" onClick={handleSendEmails} disabled={loading || files.length === 0}>
+              Send emails
+            </button>
+          </div>
+          {files.length > 0 && (
+            <div style={{ marginTop: '20px', }}>
+              <p className="sectionTitle">Selected Files</p>
+              <ul style={{ marginTop: '10px' }}>{files}</ul>
+            </div>
+          )}
         </>
       )}
     </>

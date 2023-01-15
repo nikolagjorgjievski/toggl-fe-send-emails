@@ -1,6 +1,34 @@
-import React, { ReactElement, useCallback } from 'react';
-import { DropzoneOptions, useDropzone } from 'react-dropzone';
+import React, { ReactElement, useCallback, useMemo } from 'react';
+import { DropzoneOptions, DropzoneRootProps, useDropzone } from 'react-dropzone';
 import FileWithEmails from '../@types/file';
+
+const baseStyle: DropzoneRootProps = {
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  padding: '20px',
+  borderWidth: 2,
+  borderRadius: 2,
+  borderColor: '#eeeeee',
+  borderStyle: 'dashed',
+  backgroundColor: '#fafafa',
+  color: '#bdbdbd',
+  outline: 'none',
+  transition: 'border .24s ease-in-out'
+};
+
+const focusedStyle = {
+  borderColor: '#2196f3'
+};
+
+const acceptStyle = {
+  borderColor: '#00e676'
+};
+
+const rejectStyle = {
+  borderColor: '#ff1744'
+};
 
 interface FileUploadComponentTypes {
   setLoadedFiles: Function,
@@ -48,14 +76,31 @@ export default function FileUploadComponent({ setLoadedFiles, setLoading, accept
   if (accept !== undefined) {
     dropzoneParams.accept = accept;
   }
-  const {getRootProps, getInputProps} = useDropzone(dropzoneParams);
+  const {
+    getRootProps,
+    getInputProps,
+    isFocused,
+    isDragAccept,
+    isDragReject,
+  } = useDropzone(dropzoneParams);
+
+  const style = useMemo(() => ({
+    ...baseStyle,
+    ...(isFocused ? focusedStyle : {}),
+    ...(isDragAccept ? acceptStyle : {}),
+    ...(isDragReject ? rejectStyle : {})
+  }), [
+    isFocused,
+    isDragAccept,
+    isDragReject
+  ]);
 
   return (
-    <section className="container">
-      <div { ...getRootProps({ className: 'dropzone' }) }>
+    <div className="container">
+      <div { ...getRootProps({ style }) }>
         <input { ...getInputProps() } />
-        <p>Drag n drop some files here, or click to select files</p>
+        <p>Click to select files, or drag and drop them here</p>
       </div>
-    </section>
+    </div>
   );
 }
